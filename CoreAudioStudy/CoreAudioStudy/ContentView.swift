@@ -17,6 +17,9 @@ struct ContentView: View {
                 NavigationLink("Step 2: VPIO の内側を理解する") {
                     Step2View()
                 }
+                NavigationLink("Step 3: RenderCallback で音を鳴らす") {
+                    Step3View()
+                }
             }
             .navigationTitle("Core Audio Study")
         }

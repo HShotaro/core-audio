@@ -1,4 +1,5 @@
 # Xcode
+xcuserdata/
 *.xcodeproj/xcuserdata/
 *.xcworkspace/xcuserdata/
 *.xcworkspace/contents.xcworkspacedata

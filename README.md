@@ -58,11 +58,20 @@ AVAudioEngine が隠蔽している Audio Unit の生成・プロパティ取得
 
 ---
 
-### Step 3: AU の接続を C API で実装する（RenderCallback）
-*coming soon*
+### Step 3: RenderCallback で音を鳴らす
+**詳細**: [Step3_Learning_Guide.md](Step3_Learning_Guide.md)
 
-AVAudioEngine.connect(_:to:) の内部で行われている AU 同士の接続を、
-`kAudioUnitProperty_SetRenderCallback` を使って C API で再現する。
+`AVAudioEngine.connect(_:to:)` が内部で設定している RenderCallback の仕組みを理解する。
+RemoteIO + RenderCallback だけでサイン波を出力し、プルモデルを体感する。
+
+| 学習内容 | 概要 |
+|---|---|
+| プルモデル | ハードウェア側が主導してコールバックを呼び出す設計 |
+| AURenderCallbackStruct | `connect()` が内部でやっていることを C API で再現 |
+| inRefCon によるコンテキスト受け渡し | `Unmanaged` を使った void* ↔ Swift オブジェクト変換 |
+| AudioBufferList の操作 | NonInterleaved バッファへのサンプル書き込み |
+| サイン波の生成 | 位相・周波数・サンプルレートの関係 |
+| リアルタイムスレッドの制約入門 | コールバック内の禁止操作と理由 |
 
 ---
 
