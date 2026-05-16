@@ -20,6 +20,9 @@ struct ContentView: View {
                 NavigationLink("Step 3: RenderCallback で音を鳴らす") {
                     Step3View()
                 }
+                NavigationLink("Step 4: リアルタイムスレッドの制約") {
+                    Step4View()
+                }
             }
             .navigationTitle("Core Audio Study")
         }

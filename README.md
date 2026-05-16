@@ -76,10 +76,24 @@ RemoteIO + RenderCallback だけでサイン波を出力し、プルモデルを
 ---
 
 ### Step 4: リアルタイムスレッドの制約を理解する
-*coming soon*
+**詳細**: [Step4_Learning_Guide.md](Step4_Learning_Guide.md)
 
-オーディオコールバック内で守るべきリアルタイムスレッドの制約と、
-Lock-free Queue を使った安全なデータの受け渡しを実装する。
+Priority Inversion の仕組みを理解し、UI スレッドとオーディオスレッド間のデータ受け渡しを SPSC Ring Buffer で安全に実装する。
+
+| 学習内容 | 概要 |
+|---|---|
+| Priority Inversion | malloc がリアルタイムスレッドを止めるメカニズム |
+| Step 3 の問題点 | UI スレッドからの直接書き換えによるデータ競合 |
+| SPSC Ring Buffer | Producer/Consumer が別インデックスを更新することでロック不要になる原理 |
+| コマンドパターン | パラメータ変更を Queue に積んでコールバック冒頭で処理する設計 |
+| 禁止操作まとめ | malloc / ObjC / lock / ファイルI/O / ARC の代替手段 |
+
+**Step 3 との比較**
+
+| | Step 3 | Step 4 |
+|---|---|---|
+| 周波数変更 | `ctx.frequency = newValue`（直接・データ競合の可能性）| `queue.enqueue(.setFrequency(hz))`（SPSC 経由・安全）|
+| コールバック内処理 | サンプル生成のみ | コマンド処理 → サンプル生成 |
 
 ---
 
@@ -101,12 +115,23 @@ core-audio/
 │       │   ├── AudioUnitInspector.swift   # C APIロジック
 │       │   ├── Step1ViewModel.swift
 │       │   └── Step1View.swift
-│       └── Step2/
-│           ├── VPIOInspector.swift        # VPIO C APIロジック
-│           ├── Step2ViewModel.swift
-│           └── Step2View.swift
+│       ├── Step2/
+│       │   ├── VPIOInspector.swift        # VPIO C APIロジック
+│       │   ├── Step2ViewModel.swift
+│       │   └── Step2View.swift
+│       ├── Step3/
+│       │   ├── RenderCallbackEngine.swift # RemoteIO + RenderCallback
+│       │   ├── Step3ViewModel.swift
+│       │   └── Step3View.swift
+│       └── Step4/
+│           ├── LockFreeQueue.swift        # SPSC Ring Buffer
+│           ├── SafeRenderEngine.swift     # スレッドセーフなエンジン
+│           ├── Step4ViewModel.swift
+│           └── Step4View.swift
 ├── Step1_Learning_Guide.md
 ├── Step2_Learning_Guide.md
+├── Step3_Learning_Guide.md
+├── Step4_Learning_Guide.md
 └── README.md
 ```
 
