@@ -98,10 +98,28 @@ Priority Inversion の仕組みを理解し、UI スレッドとオーディオ�
 ---
 
 ### Step 5: DSP 基礎（FFT・フィルター）
-*coming soon*
+**詳細**: [Step5_Learning_Guide.md](Step5_Learning_Guide.md)
 
-Accelerate フレームワークの `vDSP` を使ったスペクトル解析とフィルター設計。
-カラオケのピッチシフトがどう実装されているかを理解する。
+Accelerate フレームワークの `vDSP` を使いスペクトル解析とフィルター設計を実装する。
+FFT でカラオケのピッチ検出の原理を理解し、IIR・Biquad フィルターの違いを体感する。
+
+| 学習内容 | 概要 |
+|---|---|
+| FFT | 時間領域→周波数領域変換・vDSP 5ステップ・Hanning ウィンドウ |
+| FFT サイズと分解能 | 周波数分解能・時間分解能のトレードオフ・不確定性原理 |
+| installTap とバッファサイズ | 要求値と実際のサイズの違い・オーバーラップ処理 |
+| 一次 IIR LPF | y[n] = α×x[n] + (1-α)×y[n-1]・-20 dB/decade |
+| Biquad LPF | 二次バターワース・vDSP_biquad・-40 dB/decade |
+| フィルター比較 | 次数・ロールオフ・カスケードによる高次化 |
+| カラオケへの応用 | FFT スパイク位置から基本周波数を特定するピッチ検出の原理 |
+
+**フィルター比較**
+
+| | 一次 IIR | Biquad（二次）|
+|---|---|---|
+| ロールオフ | -20 dB/decade | -40 dB/decade |
+| 係数 | α（1個）| b0,b1,b2,a1,a2（5個）|
+| 実装 | 手動ループ | `vDSP_biquad` |
 
 ---
 
@@ -123,15 +141,22 @@ core-audio/
 │       │   ├── RenderCallbackEngine.swift # RemoteIO + RenderCallback
 │       │   ├── Step3ViewModel.swift
 │       │   └── Step3View.swift
-│       └── Step4/
-│           ├── LockFreeQueue.swift        # SPSC Ring Buffer
-│           ├── SafeRenderEngine.swift     # スレッドセーフなエンジン
-│           ├── Step4ViewModel.swift
-│           └── Step4View.swift
+│       ├── Step4/
+│       │   ├── LockFreeQueue.swift        # SPSC Ring Buffer
+│       │   ├── SafeRenderEngine.swift     # スレッドセーフなエンジン
+│       │   ├── Step4ViewModel.swift
+│       │   └── Step4View.swift
+│       └── Step5/
+│           ├── FFTAnalyzer.swift          # vDSP FFT 解析
+│           ├── BiquadLPFilter.swift       # vDSP_biquad ローパスフィルター
+│           ├── Step5Engine.swift          # AVAudioEngine + installTap
+│           ├── Step5ViewModel.swift
+│           └── Step5View.swift            # スペクトル可視化
 ├── Step1_Learning_Guide.md
 ├── Step2_Learning_Guide.md
 ├── Step3_Learning_Guide.md
 ├── Step4_Learning_Guide.md
+├── Step5_Learning_Guide.md
 └── README.md
 ```
 

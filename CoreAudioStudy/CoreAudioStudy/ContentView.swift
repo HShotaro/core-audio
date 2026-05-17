@@ -23,6 +23,9 @@ struct ContentView: View {
                 NavigationLink("Step 4: リアルタイムスレッドの制約") {
                     Step4View()
                 }
+                NavigationLink("Step 5: FFT・フィルター") {
+                    Step5View()
+                }
             }
             .navigationTitle("Core Audio Study")
         }
