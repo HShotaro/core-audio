@@ -22,7 +22,8 @@ enum PitchDetector {
         let spectrum = computeSpectrum(samples, fftSize: fftSize)
 
         // Step 2: HPS で基本周波数の bin を特定
-        let peakBin = hps(spectrum: spectrum, harmonics: 3)
+        // harmonics=5 にすることで 1オクターブ下の誤検出（サブハーモニック問題）を抑制する
+        let peakBin = hps(spectrum: spectrum, harmonics: 5)
 
         // Step 3: bin → 周波数 (Hz)
         let binWidth = sampleRate / Double(fftSize)
@@ -98,8 +99,12 @@ enum PitchDetector {
             }
         }
 
-        // DC 成分と極低周波を除いてピーク探索（人声範囲: 60〜1200 Hz）
-        let minBin = 4
+        // 検索範囲を人声の最低音（約 80 Hz）以上に制限する。
+        // minBin を低くしすぎると C3（130 Hz）のサブハーモニック誤検出が起きやすい。
+        // spectrum.count = fftSize/2 なので、80 Hz に対応する bin = 80 * fftSize / sampleRate
+        //                                                             = 80 * spectrum.count * 2 / 48000
+        //                                                             ≈ spectrum.count / 300
+        let minBin = max(4, Int(Double(spectrum.count) / 300.0))
         let maxBin = validCount - 1
         var maxVal: Float = 0
         var peakBin = minBin

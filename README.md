@@ -147,18 +147,20 @@ Step 1〜5 で学んだ知識（VPIO・RenderCallback・SPSC Queue・FFT）が�
 ---
 
 ### Step 7: 採点エンジン
-*coming soon*
+**詳細**: [Step7_Learning_Guide.md](Step7_Learning_Guide.md)
 
-Step 6 のピッチ検出を使い、基準音との比較からリアルタイムにスコアを算出する。
-AudioConverter API（C API）でマイク入力のフォーマット変換も実装する。
+Step 6 のピッチ検出・VPIO・SPSC Queue・FFT を統合し、BGM 付きリアルタイムカラオケ採点を実装する。
+AudioConverter API（C API）でのフォーマット変換も実装する。
 
 | 学習内容 | 概要 |
 |---|---|
-| AudioConverter API | C API でのフォーマット変換・リサンプリング |
-| 基準音との比較 | MIDI / 音符データと検出ピッチの差分計算 |
-| ピッチ精度スコア | セント（cent）単位での誤差計算（1セント = 1/100半音）|
-| タイミング精度スコア | 発声タイミングと音符の開始・終了との一致度 |
-| 総合スコア計算 | ピッチ精度 × タイミング精度の重み付けスコア |
+| VPIO 入出力同時使用 | Bus 0（BGM出力）と Bus 1（マイク入力）を同一インスタンスで同時使用 |
+| AEC の実用 | BGM をスピーカーで鳴らしながらマイクへの影響を自動除去 |
+| 採点アルゴリズム | セント誤差→点数変換・同一ノートの最高点採用 |
+| BGM 周波数のリアルタイム更新 | SPSC Queue でノート切り替えをオーディオスレッドに安全に伝達 |
+| オクターブトランスポーズ | `frequency × 2^n` で声域に合わせてメロディをシフト |
+| AudioConverter API | `AudioConverterNew` / `AudioConverterConvertBuffer` でリサンプリング |
+| `@Observable` の注意点 | `didSet` 内での自己再代入がスタックオーバーフローを引き起こす理由 |
 
 ---
 
@@ -206,17 +208,25 @@ core-audio/
 │       │   ├── Step5Engine.swift          # AVAudioEngine + installTap
 │       │   ├── Step5ViewModel.swift
 │       │   └── Step5View.swift            # スペクトル可視化
-│       └── Step6/
-│           ├── PitchDetector.swift        # FFT + HPS + Hz→音名変換
-│           ├── PitchEngine.swift          # VPIO + InputCallback（C API）
-│           ├── Step6ViewModel.swift
-│           └── Step6View.swift            # チューナー針UI
+│       ├── Step6/
+│       │   ├── PitchDetector.swift        # FFT + HPS + Hz→音名変換
+│       │   ├── PitchEngine.swift          # VPIO + InputCallback（C API）
+│       │   ├── Step6ViewModel.swift
+│       │   └── Step6View.swift            # チューナー針UI
+│       └── Step7/
+│           ├── MelodyData.swift           # NoteEvent + オクターブトランスポーズ
+│           ├── ScoreEngine.swift          # 採点アルゴリズム
+│           ├── KaraokeEngine.swift        # VPIO 入出力 + AEC + BGM生成
+│           ├── AudioConverterDemo.swift   # AudioConverter C API デモ
+│           ├── Step7ViewModel.swift
+│           └── Step7View.swift            # 採点UI + オクターブシフト
 ├── Step1_Learning_Guide.md
 ├── Step2_Learning_Guide.md
 ├── Step3_Learning_Guide.md
 ├── Step4_Learning_Guide.md
 ├── Step5_Learning_Guide.md
 ├── Step6_Learning_Guide.md
+├── Step7_Learning_Guide.md
 └── README.md
 ```
 

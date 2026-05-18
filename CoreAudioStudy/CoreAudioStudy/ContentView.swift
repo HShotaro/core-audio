@@ -29,6 +29,9 @@ struct ContentView: View {
                 NavigationLink("Step 6: リアルタイムピッチ検出") {
                     Step6View()
                 }
+                NavigationLink("Step 7: 採点エンジン") {
+                    Step7View()
+                }
             }
             .navigationTitle("Core Audio Study")
         }
