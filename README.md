@@ -124,20 +124,24 @@ FFT でカラオケのピッチ検出の原理を理解し、IIR・Biquad フィ
 ---
 
 ### Step 6: リアルタイムピッチ検出
-*coming soon*
+**詳細**: [Step6_Learning_Guide.md](Step6_Learning_Guide.md)
 
-Step 5 の FFT をベースに、マイク入力からリアルタイムで音の高さを検出する。
-カラオケ採点の核心となる「今歌っている音が何の音か」を C API + DSP で実装する。
+VPIO の InputCallback を使ってマイク入力をキャプチャし、FFT + HPS でリアルタイムにピッチを検出する。
+Step 1〜5 で学んだ知識（VPIO・RenderCallback・SPSC Queue・FFT）が実際のアプリ機能として統合される。
 
 | 学習内容 | 概要 |
 |---|---|
-| HPS法（Harmonic Product Spectrum）| 倍音構造を利用した基本周波数推定 |
-| 自己相関法 | 波形の周期性を直接検出するアプローチ |
-| Hz → 音名変換 | A4=440 Hz を基準にした MIDI ノート番号・音名の計算 |
-| C API + DSP の融合 | VPIO のレンダーコールバック内で vDSP を使ったリアルタイム処理 |
+| InputCallback vs RenderCallback | ioData が nil の理由・AudioUnitRender でデータを取り出す仕組み |
+| VPIO 入力専用セットアップ | Bus 0 出力無効化・Bus 1 StreamFormat の Scope |
+| HPS（Harmonic Product Spectrum）| product[i] = spectrum[i] × spectrum[i×2] × spectrum[i×3] で基本周波数を強調 |
+| Hz → 音名変換 | MIDI ノート番号・セント偏差（1半音 = 100 cents）|
+| サンプル蓄積バッファ | 循環バッファで fftSize 分蓄積してから FFT を実行 |
+| Step 1〜5 の統合 | VPIO・RenderCallback・SPSC Queue・FFT が 1 機能に集約 |
 
 ```
-マイク → VPIO → FFT → HPS → 基本周波数（Hz） → 音名（ド・レ・ミ…）
+マイク → VPIO InputCallback → AudioUnitRender → FFT + HPS → 音名 + セント偏差
+                                                               ↓
+                                                     SPSC Queue → UI（チューナー針）
 ```
 
 ---
@@ -196,17 +200,23 @@ core-audio/
 │       │   ├── SafeRenderEngine.swift     # スレッドセーフなエンジン
 │       │   ├── Step4ViewModel.swift
 │       │   └── Step4View.swift
-│       └── Step5/
-│           ├── FFTAnalyzer.swift          # vDSP FFT 解析
-│           ├── BiquadLPFilter.swift       # vDSP_biquad ローパスフィルター
-│           ├── Step5Engine.swift          # AVAudioEngine + installTap
-│           ├── Step5ViewModel.swift
-│           └── Step5View.swift            # スペクトル可視化
+│       ├── Step5/
+│       │   ├── FFTAnalyzer.swift          # vDSP FFT 解析
+│       │   ├── BiquadLPFilter.swift       # vDSP_biquad ローパスフィルター
+│       │   ├── Step5Engine.swift          # AVAudioEngine + installTap
+│       │   ├── Step5ViewModel.swift
+│       │   └── Step5View.swift            # スペクトル可視化
+│       └── Step6/
+│           ├── PitchDetector.swift        # FFT + HPS + Hz→音名変換
+│           ├── PitchEngine.swift          # VPIO + InputCallback（C API）
+│           ├── Step6ViewModel.swift
+│           └── Step6View.swift            # チューナー針UI
 ├── Step1_Learning_Guide.md
 ├── Step2_Learning_Guide.md
 ├── Step3_Learning_Guide.md
 ├── Step4_Learning_Guide.md
 ├── Step5_Learning_Guide.md
+├── Step6_Learning_Guide.md
 └── README.md
 ```
 
